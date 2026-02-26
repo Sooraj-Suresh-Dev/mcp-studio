@@ -1,0 +1,63 @@
+/* ---- Learn Section ---- */
+.learn__header {
+    text-align: center;
+    margin-bottom: var(--space-4xl);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.learn__grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--space-xl);
+}
+
+.learn__card {
+    padding: var(--space-2xl);
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    cursor: pointer;
+}
+
+.learn__icon {
+    width: 48px;
+    height: 48px;
+    border-radius: var(--radius-md);
+    border: 1px solid;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: var(--space-lg);
+}
+
+.learn__card-title {
+    font-size: var(--fs-xl);
+    font-weight: 700;
+    margin-bottom: var(--space-sm);
+}
+
+.learn__card-desc {
+    font-size: var(--fs-base);
+    color: var(--text-muted);
+    line-height: 1.7;
+    flex: 1;
+}
+
+.learn__card-arrow {
+    font-size: var(--fs-2xl);
+    margin-top: var(--space-lg);
+    transition: transform var(--duration) var(--ease);
+    align-self: flex-end;
+}
+
+.learn__card:hover .learn__card-arrow {
+    transform: translateX(6px);
+}
+
+@media (max-width: 768px) {
+    .learn__grid {
+        grid-template-columns: 1fr;
+    }
+}
