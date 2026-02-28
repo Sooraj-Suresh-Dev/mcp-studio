@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react';
+import { Link } from 'react-router-dom';
 import './Hero.css';
 
 export default function Hero() {
@@ -26,11 +27,6 @@ export default function Hero() {
             </div>
 
             <div className="container hero__content">
-                <div className="hero__badge">
-                    <span className="hero__badge-dot" />
-                    Open Source MCP Platform
-                </div>
-
                 <h1 className="hero__title">
                     Generate <span className="hero__accent">MCP Servers</span>
                     <br />
@@ -44,15 +40,15 @@ export default function Hero() {
                 </p>
 
                 <div className="hero__actions" id="cta">
-                    <a href="#features" className="btn btn-primary">
+                    <Link to="/generator" className="btn btn-primary">
                         <span>Start Building</span>
                         <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
                             <path d="M3 8h10m0 0L9 4m4 4L9 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                         </svg>
-                    </a>
-                    <a href="#learn" className="btn btn-secondary">
+                    </Link>
+                    <Link to="/learn" className="btn btn-secondary">
                         Learn MCP
-                    </a>
+                    </Link>
                 </div>
 
                 {/* Floating code preview */}

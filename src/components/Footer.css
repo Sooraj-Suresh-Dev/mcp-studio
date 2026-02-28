@@ -58,10 +58,16 @@
 .footer__logo {
     display: flex;
     align-items: center;
-    gap: var(--space-sm);
+    gap: var(--space-md);
     font-weight: 700;
-    font-size: var(--fs-lg);
+    font-size: var(--fs-2xl);
     margin-bottom: var(--space-md);
+}
+
+.footer__logo img {
+    height: 48px;
+    width: auto;
+    object-fit: contain;
 }
 
 .footer__logo span {

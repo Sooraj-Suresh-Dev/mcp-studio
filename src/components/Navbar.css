@@ -25,15 +25,22 @@
 .navbar__brand {
     display: flex;
     align-items: center;
-    gap: var(--space-sm);
+    gap: var(--space-md);
     font-weight: 700;
-    font-size: var(--fs-xl);
+    font-size: var(--fs-2xl);
 }
 
 .navbar__logo-placeholder {
     display: flex;
     align-items: center;
     justify-content: center;
+}
+
+.navbar__logo-placeholder img {
+    height: 25px;
+    width: auto;
+    object-fit: contain;
+    margin: -22px 0;
 }
 
 .navbar__name {
