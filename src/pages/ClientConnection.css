@@ -244,6 +244,75 @@
     animation: fadeIn 0.5s ease-out forwards;
 }
 
+.mt-20 {
+    margin-top: 20px;
+}
+
+.inline-error {
+    padding: 30px 0 !important;
+    background: transparent !important;
+    border: none !important;
+}
+
+.inline-error h2 {
+    font-size: 1.5rem !important;
+}
+
+/* Skeleton Styles */
+.skeleton-card {
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    background: rgba(255, 255, 255, 0.02);
+}
+
+.skeleton-tab {
+    width: 120px;
+    height: 14px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 4px;
+}
+
+.skeleton-icon {
+    width: 20px;
+    height: 20px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 4px;
+}
+
+.skeleton-line {
+    height: 12px;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 4px;
+    margin-bottom: 12px;
+}
+
+.skeleton-line.short {
+    width: 30%;
+}
+
+.skeleton-line.medium {
+    width: 60%;
+}
+
+.skeleton-line.long {
+    width: 90%;
+}
+
+.animate-pulse {
+    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes pulse {
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.5;
+    }
+}
+
 @media (max-width: 1100px) {
     .connection__layout {
         grid-template-columns: 1fr;

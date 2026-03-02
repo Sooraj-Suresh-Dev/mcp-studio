@@ -1,13 +1,16 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import './Generator.css';
 
 export default function Generator() {
+    const navigate = useNavigate();
     const [mode, setMode] = useState('basic'); // 'basic' or 'advanced'
     const [basicPrompt, setBasicPrompt] = useState('');
     const [advancedServerName, setAdvancedServerName] = useState('');
     const [tools, setTools] = useState([{ id: 1, name: '', description: '', inputSchema: '' }]);
-    const [status, setStatus] = useState('idle'); // 'idle', 'loading', 'output'
+    const [status, setStatus] = useState('idle'); // 'idle', 'loading', 'output', 'error'
     const [generatedOutput, setGeneratedOutput] = useState('');
+    const [errorMessage, setErrorMessage] = useState('');
     const [copySuccess, setCopySuccess] = useState(false);
     const [downloadSuccess, setDownloadSuccess] = useState(false);
 
@@ -54,39 +57,36 @@ export default function Generator() {
     };
 
     const handleGenerate = async () => {
-        if (!basicPrompt.trim()) {
-            return;
-        }
+        if (!basicPrompt.trim()) return;
 
         setStatus('loading');
+        setErrorMessage('');
         try {
             const response = await fetch('https://n8n-server-7530.onrender.com/webhook-test/server-generate', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ description: basicPrompt, mode: 'basic' }),
             });
 
-            if (response.ok) {
-                const data = await response.json();
+            const data = await response.json();
+            if (response.ok && !data.error) {
                 const result = data.output || data;
                 setGeneratedOutput(typeof result === 'string' ? result : JSON.stringify(result, null, 2));
-                setTimeout(() => setStatus('output'), 2000);
+                setTimeout(() => setStatus('output'), 1000);
             } else {
-                console.log('Failed to send request. Please try again.');
-                setStatus('idle');
+                const msg = data.error || "Failed to generate server definition";
+                setErrorMessage(`${msg}. Please try again after some time.`);
+                setStatus('error');
             }
         } catch (error) {
-            console.error('Error sending request:', error);
-            setStatus('idle');
+            console.error('Error:', error);
+            setErrorMessage("A connection error occurred. Please try again after some time.");
+            setStatus('error');
         }
     };
 
     const handleAdvancedGenerate = async () => {
-        if (!advancedServerName.trim()) {
-            return;
-        }
+        if (!advancedServerName.trim()) return;
 
         const serverVersion = document.getElementById('server-version')?.value;
         const serverDesc = document.getElementById('server-desc')?.value;
@@ -106,27 +106,28 @@ export default function Generator() {
         };
 
         setStatus('loading');
+        setErrorMessage('');
         try {
-            const response = await fetch('https://n8n-server-7530.onrender.com/webhook-test/mcp-generate', {
+            const response = await fetch('https://n8n-server-7530.onrender.com/webhook-test/server-generate', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload),
             });
 
-            if (response.ok) {
-                const data = await response.json();
+            const data = await response.json();
+            if (response.ok && !data.error) {
                 const result = data.output || data;
                 setGeneratedOutput(typeof result === 'string' ? result : JSON.stringify(result, null, 2));
-                setTimeout(() => setStatus('output'), 2000);
+                setTimeout(() => setStatus('output'), 1000);
             } else {
-                console.log('Failed to send request. Please try again.');
-                setStatus('idle');
+                const msg = data.error || "Failed to generate advanced server definition";
+                setErrorMessage(`${msg}. Please try again after some time.`);
+                setStatus('error');
             }
         } catch (error) {
-            console.error('Error sending request:', error);
-            setStatus('idle');
+            console.error('Error:', error);
+            setErrorMessage("A connection error occurred. Please try again after some time.");
+            setStatus('error');
         }
     };
 
@@ -146,6 +147,25 @@ export default function Generator() {
                         </div>
                         <h2>Architecting your MCP Server...</h2>
                         <p>Our AI is processing your requirements and building the schema structure.</p>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
+    if (status === 'error') {
+        return (
+            <div className="generator-page">
+                <div className="generator__bg">
+                    <div className="generator__blob generator__blob--1"></div>
+                    <div className="generator__blob generator__blob--2"></div>
+                </div>
+                <div className="container generator__status-container">
+                    <div className="loader-screen error-state">
+                        <div className="error-icon">⚠️</div>
+                        <h2>Generation Error</h2>
+                        <p>{errorMessage}</p>
+                        <button className="btn btn-secondary mt-20" onClick={() => setStatus('idle')}>Try Again</button>
                     </div>
                 </div>
             </div>
@@ -196,6 +216,14 @@ export default function Generator() {
                                         </button>
                                         {downloadSuccess && <span className="action-tooltip">Downloaded!</span>}
                                     </div>
+                                    <div className="btn-wrapper">
+                                        <button
+                                            className="btn btn-primary btn-small btn-validate"
+                                            onClick={() => navigate('/validator', { state: { serverData: generatedOutput } })}
+                                        >
+                                            Validate & Test
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                             <div className="output-card__body">
@@ -233,7 +261,7 @@ export default function Generator() {
                 <main className="generator__main">
                     <div className="generator__tabs">
                         <button
-                            className={`generator__tab ${mode === 'basic' ? 'active' : ''}`}
+                            className={`generator__tab ${mode === 'basic' ? 'active' : ''} `}
                             onClick={() => setMode('basic')}
                         >
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -242,7 +270,7 @@ export default function Generator() {
                             Basic (AI Assisted)
                         </button>
                         <button
-                            className={`generator__tab ${mode === 'advanced' ? 'active' : ''}`}
+                            className={`generator__tab ${mode === 'advanced' ? 'active' : ''} `}
                             onClick={() => setMode('advanced')}
                         >
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -261,7 +289,7 @@ export default function Generator() {
                                     <textarea
                                         id="basic-prompt"
                                         className="form-control"
-                                        placeholder="E.g., I want an MCP server that lets an LLM search my local file system and read markdown files. It should have a tool called 'search_files' and 'read_file'."
+                                        placeholder="E.g., I want an MCP server that lets an LLM search my local file system and read markdown files."
                                         rows="8"
                                         value={basicPrompt}
                                         onChange={(e) => setBasicPrompt(e.target.value)}
@@ -304,19 +332,14 @@ export default function Generator() {
                                     </div>
                                     <div className="form-group col-span-2">
                                         <label htmlFor="server-desc">Description</label>
-                                        <input type="text" id="server-desc" className="form-control" placeholder="Provides access to local file system and search functionalities." />
+                                        <input type="text" id="server-desc" className="form-control" placeholder="Provides access to local file system." />
                                     </div>
                                 </div>
 
                                 <div className="generator__section">
                                     <div className="generator__section-header">
                                         <h3>Tools</h3>
-                                        <button
-                                            className="btn btn-secondary btn-small"
-                                            onClick={addTool}
-                                        >
-                                            + Add Tool
-                                        </button>
+                                        <button className="btn btn-secondary btn-small" onClick={addTool}>+ Add Tool</button>
                                     </div>
 
                                     <div className="generator__tools-list">
@@ -325,11 +348,7 @@ export default function Generator() {
                                                 <div className="generator__card-header">
                                                     <h4>Tool #{tools.length - index}</h4>
                                                     {tools.length > 1 && (
-                                                        <button
-                                                            className="btn-remove"
-                                                            onClick={() => removeTool(index)}
-                                                            title="Remove Tool"
-                                                        >
+                                                        <button className="btn-remove" onClick={() => removeTool(index)}>
                                                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                                                 <path d="M3 6h18m-2 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
                                                             </svg>
@@ -342,7 +361,6 @@ export default function Generator() {
                                                         <input
                                                             type="text"
                                                             className="form-control"
-                                                            placeholder="search_docs"
                                                             value={tool.name}
                                                             onChange={(e) => updateTool(index, 'name', e.target.value)}
                                                         />
@@ -352,17 +370,15 @@ export default function Generator() {
                                                         <input
                                                             type="text"
                                                             className="form-control"
-                                                            placeholder="Search through local documentation"
                                                             value={tool.description}
                                                             onChange={(e) => updateTool(index, 'description', e.target.value)}
                                                         />
                                                     </div>
                                                     <div className="form-group col-span-2">
-                                                        <label>Input Schema (JSON string)</label>
+                                                        <label>Input Schema (JSON)</label>
                                                         <textarea
-                                                            className="form-control schema-input"
+                                                            className="form-control"
                                                             rows="4"
-                                                            placeholder='{ "type": "object", "properties": { "query": { "type": "string" } } }'
                                                             value={tool.inputSchema}
                                                             onChange={(e) => updateTool(index, 'inputSchema', e.target.value)}
                                                         ></textarea>
@@ -378,7 +394,6 @@ export default function Generator() {
                                         className="btn btn-primary btn-glow"
                                         onClick={handleAdvancedGenerate}
                                         disabled={!advancedServerName.trim()}
-                                        style={!advancedServerName.trim() ? { opacity: 0.5, cursor: 'not-allowed', filter: 'none' } : {}}
                                     >
                                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                             <path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"></path>

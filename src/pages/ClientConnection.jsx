@@ -4,7 +4,8 @@ import './ClientConnection.css';
 export default function ClientConnection() {
     const [aiMode, setAiMode] = useState(false);
     const [aiLabel, setAiLabel] = useState('');
-    const [isGenerating, setIsGenerating] = useState(false);
+    const [status, setStatus] = useState('idle'); // 'idle', 'loading', 'error'
+    const [errorMessage, setErrorMessage] = useState('');
 
     // Form State
     const [formData, setFormData] = useState({
@@ -61,7 +62,7 @@ export default function ClientConnection() {
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = 'config.json';
+        a.download = 'client_connection_config.json';
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
@@ -71,20 +72,20 @@ export default function ClientConnection() {
 
     const handleAiGenerate = async () => {
         if (!aiLabel.trim()) return;
-        setIsGenerating(true);
+        setStatus('loading');
+        setErrorMessage('');
         try {
-            const response = await fetch('https://n8n-server-7530.onrender.com/webhook-test/mcp-generate', {
+            const response = await fetch('https://n8n-server-7530.onrender.com/webhook-test/client-generator', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ description: aiLabel, mode: 'client-connection' }),
             });
 
-            if (response.ok) {
-                const data = await response.json();
+            const data = await response.json();
+            if (response.ok && !data.error) {
                 const result = data.output || data;
                 const parsed = typeof result === 'string' ? JSON.parse(result) : result;
 
-                // Extract from mcpServers if exists
                 let config = parsed;
                 let sName = formData.serverName;
                 if (parsed.mcpServers) {
@@ -102,11 +103,16 @@ export default function ClientConnection() {
                     headers: config.headers ? Object.entries(config.headers).map(([k, v]) => ({ key: k, value: v })) : [{ key: '', value: '' }]
                 });
                 setAiMode(false);
+                setStatus('idle');
+            } else {
+                const msg = data.error || "Failed to generate configuration";
+                setErrorMessage(`${msg}. Please try again after some time.`);
+                setStatus('error');
             }
         } catch (error) {
             console.error("AI Generation failed:", error);
-        } finally {
-            setIsGenerating(false);
+            setErrorMessage("A connection error occurred. Please try again after some time.");
+            setStatus('error');
         }
     };
 
@@ -140,7 +146,7 @@ export default function ClientConnection() {
                         Standardize and export your MCP client configurations. Sync with Claude Desktop, IDEs, or custom tools.
                     </p>
 
-                    <button className={`btn - ai - toggle ${aiMode ? 'active' : ''} `} onClick={() => setAiMode(!aiMode)}>
+                    <button className={`btn-ai-toggle ${aiMode ? 'active' : ''}`} onClick={() => { setAiMode(!aiMode); setStatus('idle'); }}>
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                             <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" />
                         </svg>
@@ -152,17 +158,28 @@ export default function ClientConnection() {
                     <div className="connection__form-area">
                         {aiMode ? (
                             <div className="ai-input-card animate-fade-in">
-                                <h3>Describe your Client Connection</h3>
-                                <textarea
-                                    className="form-control"
-                                    rows="10"
-                                    placeholder="E.g., I want to connect a local weather server running at http://localhost:3000 with an API key header."
-                                    value={aiLabel}
-                                    onChange={(e) => setAiLabel(e.target.value)}
-                                />
-                                <button className="btn btn-primary btn-glow" onClick={handleAiGenerate} disabled={isGenerating || !aiLabel.trim()}>
-                                    {isGenerating ? "Generating..." : "Generate Magic Settings"}
-                                </button>
+                                {status === 'error' ? (
+                                    <div className="loader-screen error-state inline-error">
+                                        <div className="error-icon">⚠️</div>
+                                        <h3>Generation Error</h3>
+                                        <p>{errorMessage}</p>
+                                        <button className="btn btn-secondary mt-20" onClick={() => setStatus('idle')}>Try Again</button>
+                                    </div>
+                                ) : (
+                                    <>
+                                        <h3>Describe your Client Connection</h3>
+                                        <textarea
+                                            className="form-control"
+                                            rows="10"
+                                            placeholder="E.g., I want to connect a local weather server running at http://localhost:3000 with an API key header."
+                                            value={aiLabel}
+                                            onChange={(e) => setAiLabel(e.target.value)}
+                                        />
+                                        <button className="btn btn-primary btn-glow" onClick={handleAiGenerate} disabled={status === 'loading' || !aiLabel.trim()}>
+                                            {status === 'loading' ? "Generating..." : "Generate Magic Settings"}
+                                        </button>
+                                    </>
+                                )}
                             </div>
                         ) : (
                             <div className="form-card animate-fade-in">
@@ -244,7 +261,7 @@ export default function ClientConnection() {
                                                         value={item.value}
                                                         onChange={(e) => updateListItem('env', i, e.target.value, 'value')}
                                                     />
-                                                    {formData.env.length > i && (
+                                                    {formData.env.length > 0 && (
                                                         <button className="btn-remove" onClick={() => removeListItem('env', i)}>×</button>
                                                     )}
                                                 </div>
@@ -285,7 +302,7 @@ export default function ClientConnection() {
                                                         value={item.value}
                                                         onChange={(e) => updateListItem('headers', i, e.target.value, 'value')}
                                                     />
-                                                    {formData.headers.length > i && (
+                                                    {formData.headers.length > 0 && (
                                                         <button className="btn-remove" onClick={() => removeListItem('headers', i)}>×</button>
                                                     )}
                                                 </div>
@@ -298,37 +315,56 @@ export default function ClientConnection() {
                     </div>
 
                     <div className="connection__preview-area">
-                        <div className="output-card code-view sticky-preview">
-                            <div className="output-card__header">
-                                <div className="output-card__tabs">
-                                    <span className="active">client_connection_config.json</span>
-                                </div>
-                                <div className="output-card__controls">
-                                    <div className="btn-wrapper">
-                                        <button className="btn-icon" onClick={handleCopy} title="Copy Code">
-                                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-                                                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-                                            </svg>
-                                        </button>
-                                        {copySuccess && <span className="action-tooltip">Copied!</span>}
-                                    </div>
-                                    <div className="btn-wrapper">
-                                        <button className="btn-icon" onClick={handleDownload} title="Download File">
-                                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                                                <polyline points="7 10 12 15 17 10"></polyline>
-                                                <line x1="12" y1="15" x2="12" y2="3"></line>
-                                            </svg>
-                                        </button>
-                                        {downloadSuccess && <span className="action-tooltip">Downloaded!</span>}
+                        {status === 'loading' ? (
+                            <div className="output-card code-view skeleton-card animate-pulse">
+                                <div className="output-card__header">
+                                    <div className="skeleton-tab"></div>
+                                    <div className="output-card__controls">
+                                        <div className="skeleton-icon"></div>
+                                        <div className="skeleton-icon"></div>
                                     </div>
                                 </div>
+                                <div className="output-card__body">
+                                    <div className="skeleton-line short"></div>
+                                    <div className="skeleton-line medium"></div>
+                                    <div className="skeleton-line long"></div>
+                                    <div className="skeleton-line medium"></div>
+                                    <div className="skeleton-line short"></div>
+                                </div>
                             </div>
-                            <div className="output-card__body">
-                                <pre><code>{generatePreview()}</code></pre>
+                        ) : (
+                            <div className="output-card code-view sticky-preview">
+                                <div className="output-card__header">
+                                    <div className="output-card__tabs">
+                                        <span className="active">client_connection_config.json</span>
+                                    </div>
+                                    <div className="output-card__controls">
+                                        <div className="btn-wrapper">
+                                            <button className="btn-icon" onClick={handleCopy} title="Copy Code">
+                                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                                                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                                                </svg>
+                                            </button>
+                                            {copySuccess && <span className="action-tooltip">Copied!</span>}
+                                        </div>
+                                        <div className="btn-wrapper">
+                                            <button className="btn-icon" onClick={handleDownload} title="Download File">
+                                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                                    <polyline points="7 10 12 15 17 10"></polyline>
+                                                    <line x1="12" y1="15" x2="12" y2="3"></line>
+                                                </svg>
+                                            </button>
+                                            {downloadSuccess && <span className="action-tooltip">Downloaded!</span>}
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="output-card__body">
+                                    <pre><code>{generatePreview()}</code></pre>
+                                </div>
                             </div>
-                        </div>
+                        )}
                     </div>
                 </div>
             </div>
