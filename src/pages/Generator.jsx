@@ -60,7 +60,7 @@ export default function Generator() {
 
         setStatus('loading');
         try {
-            const response = await fetch('https://n8n-server-7530.onrender.com/webhook-test/mcp-generate', {
+            const response = await fetch('https://n8n-server-7530.onrender.com/webhook-test/server-generate', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

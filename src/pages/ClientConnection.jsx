@@ -1,8 +1,127 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import './ClientConnection.css';
 
 export default function ClientConnection() {
-    const [clientType, setClientType] = useState('claude'); // 'claude', 'ide', 'custom'
+    const [aiMode, setAiMode] = useState(false);
+    const [aiLabel, setAiLabel] = useState('');
+    const [isGenerating, setIsGenerating] = useState(false);
+
+    // Form State
+    const [formData, setFormData] = useState({
+        serverName: '',
+        transport: 'stdio',
+        command: '',
+        args: [''],
+        env: [{ key: '', value: '' }],
+        url: '',
+        headers: [{ key: '', value: '' }]
+    });
+
+    const [copySuccess, setCopySuccess] = useState(false);
+    const [downloadSuccess, setDownloadSuccess] = useState(false);
+
+    // Sync Preview
+    const generatePreview = () => {
+        const serverConfig = {
+            transport: formData.transport
+        };
+
+        if (formData.transport === 'stdio') {
+            serverConfig.command = formData.command;
+            serverConfig.args = formData.args.filter(a => a.trim() !== '');
+            const envObj = {};
+            formData.env.forEach(item => {
+                if (item.key.trim()) envObj[item.key] = item.value;
+            });
+            if (Object.keys(envObj).length > 0) serverConfig.env = envObj;
+        } else {
+            serverConfig.url = formData.url;
+            const headersObj = {};
+            formData.headers.forEach(item => {
+                if (item.key.trim()) headersObj[item.key] = item.value;
+            });
+            if (Object.keys(headersObj).length > 0) serverConfig.headers = headersObj;
+        }
+
+        return JSON.stringify({
+            mcpServers: {
+                [formData.serverName || "your-server-name"]: serverConfig
+            }
+        }, null, 2);
+    };
+
+    const handleCopy = () => {
+        navigator.clipboard.writeText(generatePreview());
+        setCopySuccess(true);
+        setTimeout(() => setCopySuccess(false), 2000);
+    };
+
+    const handleDownload = () => {
+        const blob = new Blob([generatePreview()], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'config.json';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        setDownloadSuccess(true);
+        setTimeout(() => setDownloadSuccess(false), 2000);
+    };
+
+    const handleAiGenerate = async () => {
+        if (!aiLabel.trim()) return;
+        setIsGenerating(true);
+        try {
+            const response = await fetch('https://n8n-server-7530.onrender.com/webhook-test/mcp-generate', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ description: aiLabel, mode: 'client-connection' }),
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                const result = data.output || data;
+                const parsed = typeof result === 'string' ? JSON.parse(result) : result;
+
+                // Extract from mcpServers if exists
+                let config = parsed;
+                let sName = formData.serverName;
+                if (parsed.mcpServers) {
+                    sName = Object.keys(parsed.mcpServers)[0];
+                    config = parsed.mcpServers[sName];
+                }
+
+                setFormData({
+                    serverName: sName || 'generated-server',
+                    transport: config.transport || 'stdio',
+                    command: config.command || '',
+                    args: config.args || [''],
+                    env: config.env ? Object.entries(config.env).map(([k, v]) => ({ key: k, value: v })) : [{ key: '', value: '' }],
+                    url: config.url || '',
+                    headers: config.headers ? Object.entries(config.headers).map(([k, v]) => ({ key: k, value: v })) : [{ key: '', value: '' }]
+                });
+                setAiMode(false);
+            }
+        } catch (error) {
+            console.error("AI Generation failed:", error);
+        } finally {
+            setIsGenerating(false);
+        }
+    };
+
+    // Generic list handlers
+    const addListItem = (field) => setFormData(prev => ({ ...prev, [field]: [...prev[field], field === 'args' ? '' : { key: '', value: '' }] }));
+    const removeListItem = (field, index) => setFormData(prev => ({ ...prev, [field]: prev[field].filter((_, i) => i !== index) }));
+    const updateListItem = (field, index, value, keyField = null) => {
+        const newList = [...formData[field]];
+        if (keyField) {
+            newList[index][keyField] = value;
+        } else {
+            newList[index] = value;
+        }
+        setFormData(prev => ({ ...prev, [field]: newList }));
+    };
 
     return (
         <div className="connection-page">
@@ -18,119 +137,197 @@ export default function ClientConnection() {
                         Client <span className="text-gradient">Connection</span>
                     </h1>
                     <p className="connection__subtitle">
-                        Enable your AI assistant to communicate with your locally running MCP servers.
-                        Follow the steps below to establish a secure link.
+                        Standardize and export your MCP client configurations. Sync with Claude Desktop, IDEs, or custom tools.
                     </p>
+
+                    <button className={`btn - ai - toggle ${aiMode ? 'active' : ''} `} onClick={() => setAiMode(!aiMode)}>
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" />
+                        </svg>
+                        {aiMode ? "Switch to Manual" : "Generate from Text (AI)"}
+                    </button>
                 </header>
 
-                <div className="connection__content">
-                    <div className="connection__sidebar">
-                        <div className="connection__steps">
-                            <div className={`connection-step ${clientType === 'claude' ? 'active' : ''}`} onClick={() => setClientType('claude')}>
-                                <div className="step-num">01</div>
-                                <div className="step-info">
-                                    <h3>Claude Desktop</h3>
-                                    <p>Configure Claude for local tools</p>
-                                </div>
+                <div className="connection__layout">
+                    <div className="connection__form-area">
+                        {aiMode ? (
+                            <div className="ai-input-card animate-fade-in">
+                                <h3>Describe your Client Connection</h3>
+                                <textarea
+                                    className="form-control"
+                                    rows="10"
+                                    placeholder="E.g., I want to connect a local weather server running at http://localhost:3000 with an API key header."
+                                    value={aiLabel}
+                                    onChange={(e) => setAiLabel(e.target.value)}
+                                />
+                                <button className="btn btn-primary btn-glow" onClick={handleAiGenerate} disabled={isGenerating || !aiLabel.trim()}>
+                                    {isGenerating ? "Generating..." : "Generate Magic Settings"}
+                                </button>
                             </div>
-                            <div className={`connection-step ${clientType === 'ide' ? 'active' : ''}`} onClick={() => setClientType('ide')}>
-                                <div className="step-num">02</div>
-                                <div className="step-info">
-                                    <h3>IDE Extensions</h3>
-                                    <p>Connect with VS Code or Cursor</p>
+                        ) : (
+                            <div className="form-card animate-fade-in">
+                                <div className="form-grid">
+                                    <div className="form-group">
+                                        <label>Server Name</label>
+                                        <input
+                                            type="text"
+                                            className="form-control"
+                                            placeholder="weather-server"
+                                            value={formData.serverName}
+                                            onChange={(e) => setFormData({ ...formData, serverName: e.target.value })}
+                                        />
+                                    </div>
+                                    <div className="form-group">
+                                        <label>Transport Type</label>
+                                        <select
+                                            className="form-control"
+                                            value={formData.transport}
+                                            onChange={(e) => setFormData({ ...formData, transport: e.target.value })}
+                                        >
+                                            <option value="stdio">STDIO</option>
+                                            <option value="http">HTTP</option>
+                                        </select>
+                                    </div>
                                 </div>
+
+                                {formData.transport === 'stdio' ? (
+                                    <div className="transport-fields animate-fade-in">
+                                        <div className="form-group">
+                                            <label>Command (Full Path/Executable)</label>
+                                            <input
+                                                type="text"
+                                                className="form-control"
+                                                placeholder="node"
+                                                value={formData.command}
+                                                onChange={(e) => setFormData({ ...formData, command: e.target.value })}
+                                            />
+                                        </div>
+
+                                        <div className="form-group dynamic-list">
+                                            <div className="list-header">
+                                                <label>Arguments (Args)</label>
+                                                <button className="btn-add" onClick={() => addListItem('args')}>+ Add</button>
+                                            </div>
+                                            {formData.args.map((arg, i) => (
+                                                <div key={i} className="list-item">
+                                                    <input
+                                                        type="text"
+                                                        className="form-control"
+                                                        value={arg}
+                                                        onChange={(e) => updateListItem('args', i, e.target.value)}
+                                                    />
+                                                    {formData.args.length > 1 && (
+                                                        <button className="btn-remove" onClick={() => removeListItem('args', i)}>×</button>
+                                                    )}
+                                                </div>
+                                            ))}
+                                        </div>
+
+                                        <div className="form-group dynamic-list">
+                                            <div className="list-header">
+                                                <label>Environment Variables</label>
+                                                <button className="btn-add" onClick={() => addListItem('env')}>+ Add</button>
+                                            </div>
+                                            {formData.env.map((item, i) => (
+                                                <div key={i} className="list-item flex-row">
+                                                    <input
+                                                        type="text"
+                                                        className="form-control"
+                                                        placeholder="KEY"
+                                                        value={item.key}
+                                                        onChange={(e) => updateListItem('env', i, e.target.value, 'key')}
+                                                    />
+                                                    <input
+                                                        type="text"
+                                                        className="form-control"
+                                                        placeholder="VALUE"
+                                                        value={item.value}
+                                                        onChange={(e) => updateListItem('env', i, e.target.value, 'value')}
+                                                    />
+                                                    {formData.env.length > i && (
+                                                        <button className="btn-remove" onClick={() => removeListItem('env', i)}>×</button>
+                                                    )}
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <div className="transport-fields animate-fade-in">
+                                        <div className="form-group">
+                                            <label>Server URL</label>
+                                            <input
+                                                type="text"
+                                                className="form-control"
+                                                placeholder="http://localhost:3000/mcp"
+                                                value={formData.url}
+                                                onChange={(e) => setFormData({ ...formData, url: e.target.value })}
+                                            />
+                                        </div>
+
+                                        <div className="form-group dynamic-list">
+                                            <div className="list-header">
+                                                <label>Custom Headers</label>
+                                                <button className="btn-add" onClick={() => addListItem('headers')}>+ Add</button>
+                                            </div>
+                                            {formData.headers.map((item, i) => (
+                                                <div key={i} className="list-item flex-row">
+                                                    <input
+                                                        type="text"
+                                                        className="form-control"
+                                                        placeholder="Header-Name"
+                                                        value={item.key}
+                                                        onChange={(e) => updateListItem('headers', i, e.target.value, 'key')}
+                                                    />
+                                                    <input
+                                                        type="text"
+                                                        className="form-control"
+                                                        placeholder="Value"
+                                                        value={item.value}
+                                                        onChange={(e) => updateListItem('headers', i, e.target.value, 'value')}
+                                                    />
+                                                    {formData.headers.length > i && (
+                                                        <button className="btn-remove" onClick={() => removeListItem('headers', i)}>×</button>
+                                                    )}
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
                             </div>
-                            <div className={`connection-step ${clientType === 'custom' ? 'active' : ''}`} onClick={() => setClientType('custom')}>
-                                <div className="step-num">03</div>
-                                <div className="step-info">
-                                    <h3>Custom Client</h3>
-                                    <p>Implement your own connection</p>
-                                </div>
-                            </div>
-                        </div>
+                        )}
                     </div>
 
-                    <div className="connection__main">
-                        <div className="connection-card">
-                            {clientType === 'claude' && (
-                                <div className="client-guide animate-fade-in">
-                                    <h2>Claude Desktop Configuration</h2>
-                                    <p>To connect your MCP server to Claude Desktop, add your server configuration to the user settings file.</p>
-
-                                    <div className="guide-box">
-                                        <h4>Configuration Path</h4>
-                                        <code className="path-code">~/Library/Application Support/Claude/claude_desktop_config.json</code>
+                    <div className="connection__preview-area">
+                        <div className="output-card code-view sticky-preview">
+                            <div className="output-card__header">
+                                <div className="output-card__tabs">
+                                    <span className="active">client_connection_config.json</span>
+                                </div>
+                                <div className="output-card__controls">
+                                    <div className="btn-wrapper">
+                                        <button className="btn-icon" onClick={handleCopy} title="Copy Code">
+                                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                                                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                                            </svg>
+                                        </button>
+                                        {copySuccess && <span className="action-tooltip">Copied!</span>}
                                     </div>
-
-                                    <div className="guide-box">
-                                        <h4>Add to Settings</h4>
-                                        <pre className="code-snippet">
-                                            <code>{`{
-  "mcpServers": {
-    "your-server-name": {
-      "command": "node",
-      "args": ["/path/to/your/server/index.js"]
-    }
-  }
-}`}</code>
-                                        </pre>
-                                    </div>
-
-                                    <div className="guide-actions">
-                                        <button className="btn btn-primary btn-small">Restart Claude</button>
-                                        <button className="btn btn-secondary btn-small">Verify Connection</button>
+                                    <div className="btn-wrapper">
+                                        <button className="btn-icon" onClick={handleDownload} title="Download File">
+                                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                                <polyline points="7 10 12 15 17 10"></polyline>
+                                                <line x1="12" y1="15" x2="12" y2="3"></line>
+                                            </svg>
+                                        </button>
+                                        {downloadSuccess && <span className="action-tooltip">Downloaded!</span>}
                                     </div>
                                 </div>
-                            )}
-
-                            {clientType === 'ide' && (
-                                <div className="client-guide animate-fade-in">
-                                    <h2>IDE Extension Setup</h2>
-                                    <p>Connect your MCP server directly to your development environment.</p>
-                                    <div className="ide-options">
-                                        <div className="ide-item">
-                                            <div className="ide-icon">VS</div>
-                                            <span>VS Code</span>
-                                        </div>
-                                        <div className="ide-item">
-                                            <div className="ide-icon">CU</div>
-                                            <span>Cursor</span>
-                                        </div>
-                                        <div className="ide-item">
-                                            <div className="ide-icon">IN</div>
-                                            <span>IntelliJ</span>
-                                        </div>
-                                    </div>
-                                    <div className="guide-box">
-                                        <h4>Quick Setup</h4>
-                                        <p>Install the "MCP Toolkit" from your IDE's marketplace and point it to your locally generated schema file.</p>
-                                    </div>
-                                </div>
-                            )}
-
-                            {clientType === 'custom' && (
-                                <div className="client-guide animate-fade-in">
-                                    <h2>Custom Implementation</h2>
-                                    <p>Integrate the Model Context Protocol into your own application or custom tools.</p>
-                                    <div className="guide-box">
-                                        <h4>SDK Installation</h4>
-                                        <pre className="code-snippet">
-                                            <code>npm install @modelcontextprotocol/sdk</code>
-                                        </pre>
-                                    </div>
-                                    <div className="guide-box">
-                                        <h4>Initialize Client</h4>
-                                        <pre className="code-snippet">
-                                            <code>{`import { Client } from "@modelcontextprotocol/sdk";
-
-const client = new Client({
-  name: "custom-client",
-  version: "1.0.0"
-});`}</code>
-                                        </pre>
-                                    </div>
-                                </div>
-                            )}
+                            </div>
+                            <div className="output-card__body">
+                                <pre><code>{generatePreview()}</code></pre>
+                            </div>
                         </div>
                     </div>
                 </div>
