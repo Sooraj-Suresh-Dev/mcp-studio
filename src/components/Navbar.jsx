@@ -48,7 +48,7 @@ export default function Navbar() {
                             {l.label}
                         </a>
                     ))}
-                    <Link to="/generator" className="btn btn-primary navbar__cta" onClick={() => setMobileOpen(false)}>
+                    <Link to="/options-selection" className="btn btn-primary navbar__cta" onClick={() => setMobileOpen(false)}>
                         Get Started
                     </Link>
                 </div>

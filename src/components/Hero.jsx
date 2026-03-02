@@ -40,7 +40,7 @@ export default function Hero() {
                 </p>
 
                 <div className="hero__actions" id="cta">
-                    <Link to="/generator" className="btn btn-primary">
+                    <Link to="/options-selection" className="btn btn-primary">
                         <span>Start Building</span>
                         <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
                             <path d="M3 8h10m0 0L9 4m4 4L9 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
