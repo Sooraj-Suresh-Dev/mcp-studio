@@ -62,7 +62,7 @@ export default function Generator() {
         setStatus('loading');
         setErrorMessage('');
         try {
-            const response = await fetch('https://n8n-server-7530.onrender.com/webhook-test/server-generate', {
+            const response = await fetch('https://n8n-server-7530.onrender.com/webhook/server-generate', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ description: basicPrompt, mode: 'basic' }),
@@ -108,7 +108,7 @@ export default function Generator() {
         setStatus('loading');
         setErrorMessage('');
         try {
-            const response = await fetch('https://n8n-server-7530.onrender.com/webhook-test/server-generate', {
+            const response = await fetch('https://n8n-server-7530.onrender.com/webhook/server-generate', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload),

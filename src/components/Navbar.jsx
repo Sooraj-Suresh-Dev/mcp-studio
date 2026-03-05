@@ -21,10 +21,12 @@ export default function Navbar() {
     ];
 
     const handleLogoClick = (e) => {
-        if (location.pathname === '/') {
+        // If we are not at the top of the page, scroll to top and prevent navigation
+        if (window.scrollY > 0) {
             e.preventDefault();
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
+        // If we are already at the top, normal Link behavior takes us to "/"
         setMobileOpen(false);
     };
 

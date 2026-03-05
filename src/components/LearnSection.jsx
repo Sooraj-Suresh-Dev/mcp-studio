@@ -11,7 +11,7 @@ const resources = [
         ),
         title: 'Documentation',
         description: 'Comprehensive API references, schema guides, and best practices for building MCP-compliant servers.',
-        link: '#',
+        link: '/learn',
         color: 'var(--accent)',
     },
     {
@@ -35,7 +35,7 @@ const resources = [
         ),
         title: 'Quick Start',
         description: 'Get your first MCP server running in under 5 minutes with our streamlined setup wizard.',
-        link: '#',
+        link: '/learn/quick-start',
         color: 'var(--warning)',
     },
     {

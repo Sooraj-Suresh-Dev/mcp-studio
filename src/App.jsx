@@ -7,6 +7,13 @@ import Generator from './pages/Generator';
 import OptionsSelection from './pages/OptionsSelection';
 import ClientConnection from './pages/ClientConnection';
 import Validator from './pages/Validator';
+import Article from './pages/Article';
+import WhatIsMCP from './pages/WhatIsMCP';
+import QuickStart from './pages/QuickStart';
+import SchemaDesign from './pages/SchemaDesign';
+import SecurityAuth from './pages/SecurityAuth';
+import ClaudeIntegration from './pages/ClaudeIntegration';
+import Troubleshooting from './pages/Troubleshooting';
 import './App.css';
 
 export default function App() {
@@ -17,6 +24,13 @@ export default function App() {
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/learn" element={<Learn />} />
+          <Route path="/learn/what-is-mcp" element={<WhatIsMCP />} />
+          <Route path="/learn/quick-start" element={<QuickStart />} />
+          <Route path="/learn/schema-patterns" element={<SchemaDesign />} />
+          <Route path="/learn/security" element={<SecurityAuth />} />
+          <Route path="/learn/claude-integration" element={<ClaudeIntegration />} />
+          <Route path="/learn/troubleshooting" element={<Troubleshooting />} />
+          <Route path="/article" element={<Article />} />
           <Route path="/options-selection" element={<OptionsSelection />} />
           <Route path="/generator" element={<Generator />} />
           <Route path="/client-connection" element={<ClientConnection />} />

@@ -142,6 +142,7 @@
 }
 
 .featured-article__image {
+    background-image: url("../assets/Article_cover.png");
     background-size: cover;
     background-position: center;
     min-height: 300px;

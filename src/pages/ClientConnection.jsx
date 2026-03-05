@@ -75,7 +75,7 @@ export default function ClientConnection() {
         setStatus('loading');
         setErrorMessage('');
         try {
-            const response = await fetch('https://n8n-server-7530.onrender.com/webhook-test/client-generator', {
+            const response = await fetch('https://n8n-server-7530.onrender.com/webhook/client-generator', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ description: aiLabel, mode: 'client-connection' }),

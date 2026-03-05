@@ -1,25 +1,37 @@
+import { Link } from 'react-router-dom';
 import './Footer.css';
 
 const footerLinks = {
-    Product: ['Server Generator', 'Tool Builder', 'Templates', 'API'],
-    Resources: ['Documentation', 'Tutorials', 'Examples', 'Blog'],
-    /* COMPANY_NAME: Replace "Company" with your company name */
-    Company: ['About', 'Careers', 'Contact', 'Press'],
-    Connect: ['GitHub', 'Discord', 'Twitter', 'YouTube'],
+    Product: [
+        { label: 'Server Generator', href: '/generator' },
+        { label: 'Client Config Generator', href: '/client-connection' },
+        { label: 'MCP Validator', href: '/validator' }
+    ],
+    Resources: [
+        { label: 'Documentation', href: '/learn' },
+        { label: 'Tutorials', href: '/learn/quick-start' },
+        { label: 'Examples', href: '/learn/schema-patterns' }
+    ],
+    Connect: [
+        { label: 'GitHub', href: 'https://github.com/ModelContextProtocol', isExternal: true }
+    ]
 };
 
 export default function Footer() {
+    const scrollToTop = () => {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+
     return (
         <footer className="footer">
             <div className="container">
                 {/* Links */}
                 <div className="footer__grid">
                     <div className="footer__brand">
-                        {/* LOGO + SITE_NAME: Replace below */}
-                        <div className="footer__logo">
+                        <Link to="/" className="footer__logo" onClick={scrollToTop}>
                             <img src="/Mcp_Studio.png" alt="Mcp Studio Logo" />
                             <span>MCP Studio</span>
-                        </div>
+                        </Link>
                         <p className="footer__tagline">
                             Generate, build, and learn — the complete MCP platform.
                         </p>
@@ -30,8 +42,25 @@ export default function Footer() {
                             <h4 className="footer__col-title">{heading}</h4>
                             <ul>
                                 {links.map((link) => (
-                                    <li key={link}>
-                                        <a href="#" className="footer__link">{link}</a>
+                                    <li key={link.label}>
+                                        {link.isExternal ? (
+                                            <a
+                                                href={link.href}
+                                                className="footer__link"
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                            >
+                                                {link.label}
+                                            </a>
+                                        ) : (
+                                            <Link
+                                                to={link.href}
+                                                className="footer__link"
+                                                onClick={scrollToTop}
+                                            >
+                                                {link.label}
+                                            </Link>
+                                        )}
                                     </li>
                                 ))}
                             </ul>
@@ -41,11 +70,10 @@ export default function Footer() {
 
                 {/* Bottom */}
                 <div className="footer__bottom">
-                    {/* COPYRIGHT: Replace with your copyright text */}
                     <p className="footer__copy">© 2026 MCP Studio. All rights reserved.</p>
                     <div className="footer__legal">
-                        <a href="#">Privacy Policy</a>
-                        <a href="#">Terms of Service</a>
+                        <Link to="/" onClick={scrollToTop}>Privacy Policy</Link>
+                        <Link to="/" onClick={scrollToTop}>Terms of Service</Link>
                     </div>
                 </div>
             </div>

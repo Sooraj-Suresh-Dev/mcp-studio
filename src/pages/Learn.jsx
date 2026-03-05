@@ -7,7 +7,7 @@ const featuredResource = {
     description: 'A deep dive into how MCP works under the hood, why conversational AI needs it, and how you can architect a highly scalable server from scratch.',
     readTime: '15 min read',
     tag: 'Featured',
-    image: 'https://images.unsplash.com/photo-1620825937374-87fc7d628285?auto=format&fit=crop&w=800&q=80'
+    image: './assets/Article_cover.png'
 };
 
 const resources = [
@@ -20,14 +20,16 @@ const resources = [
                 description: 'Understand the core concepts behind the Model Context Protocol and why it matters.',
                 readTime: '5 min read',
                 tag: 'Beginner',
-                color: '#6366f1'
+                color: '#6366f1',
+                href: '/learn/what-is-mcp'
             },
             {
                 title: 'Quick Start Guide',
                 description: 'Get your first MCP server running in under 5 minutes with our guided setup wizard.',
                 readTime: '10 min read',
                 tag: 'Tutorial',
-                color: '#ec4899'
+                color: '#ec4899',
+                href: '/learn/quick-start'
             }
         ]
     },
@@ -40,14 +42,16 @@ const resources = [
                 description: 'Learn how to structure precise and effective input schemas for complex tool integrations.',
                 readTime: '12 min read',
                 tag: 'Advanced',
-                color: '#8b5cf6'
+                color: '#8b5cf6',
+                href: '/learn/schema-patterns'
             },
             {
                 title: 'Security & Authentication',
                 description: 'Best practices for securing your MCP endpoints and managing safe authentication passes.',
                 readTime: '15 min read',
                 tag: 'Security',
-                color: '#10b981'
+                color: '#10b981',
+                href: '/learn/security'
             }
         ]
     },
@@ -60,14 +64,16 @@ const resources = [
                 description: 'A complete walkthrough on how to bind your MCP server to Anthropic’s Claude Desktop client.',
                 readTime: '8 min read',
                 tag: 'Integration',
-                color: '#f59e0b'
+                color: '#f59e0b',
+                href: '/learn/claude-integration'
             },
             {
                 title: 'Troubleshooting Common Issues',
                 description: 'A comprehensive list of common MCP errors, debugging strategies, and solutions.',
                 readTime: '7 min read',
                 tag: 'Guide',
-                color: '#ef4444'
+                color: '#ef4444',
+                href: '/learn/troubleshooting'
             }
         ]
     }
@@ -100,7 +106,7 @@ export default function Learn() {
                 <main className="learn-hub__main">
                     {/* Featured Article */}
                     <section className="featured-article">
-                        <div className="featured-article__image" style={{ backgroundImage: `url(${featuredResource.image})` }}>
+                        <div className="featured-article__image">
                             <div className="featured-article__overlay"></div>
                         </div>
                         <div className="featured-article__content">
@@ -110,7 +116,7 @@ export default function Learn() {
                             </div>
                             <h2 className="featured-article__title">{featuredResource.title}</h2>
                             <p className="featured-article__desc">{featuredResource.description}</p>
-                            <Link to="#" className="btn btn-primary featured-article__btn">Read Article</Link>
+                            <Link to="/article" className="btn btn-primary featured-article__btn">Read Article</Link>
                         </div>
                     </section>
 
@@ -124,7 +130,7 @@ export default function Learn() {
                                 </h3>
                                 <div className="resource-cards-list">
                                     {section.items.map((item, itemIdx) => (
-                                        <Link to="#" className="interactive-card" key={itemIdx}>
+                                        <Link to={item.href} className="interactive-card" key={itemIdx}>
                                             <div className="interactive-card__glow" style={{ background: item.color }}></div>
                                             <div className="interactive-card__inner">
                                                 <div className="interactive-card__top">
