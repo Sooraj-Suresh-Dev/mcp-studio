@@ -72,8 +72,8 @@ export default function Footer() {
                 <div className="footer__bottom">
                     <p className="footer__copy">© 2026 MCP Studio. All rights reserved.</p>
                     <div className="footer__legal">
-                        <Link to="/" onClick={scrollToTop}>Privacy Policy</Link>
-                        <Link to="/" onClick={scrollToTop}>Terms of Service</Link>
+                        <Link to="/privacy-policy" onClick={scrollToTop}>Privacy Policy</Link>
+                        <Link to="/terms-of-service" onClick={scrollToTop}>Terms of Service</Link>
                     </div>
                 </div>
             </div>

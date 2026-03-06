@@ -7,6 +7,10 @@ export default function Navbar() {
     const [mobileOpen, setMobileOpen] = useState(false);
     const location = useLocation();
 
+    const scrollToTop = () => {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+
     useEffect(() => {
         const onScroll = () => setScrolled(window.scrollY > 40);
         window.addEventListener('scroll', onScroll);
@@ -51,7 +55,7 @@ export default function Navbar() {
                             {l.label}
                         </a>
                     ))}
-                    <Link to="/options-selection" className="btn btn-primary navbar__cta" onClick={() => setMobileOpen(false)}>
+                    <Link to="/options-selection" className="btn btn-primary navbar__cta" onClick={scrollToTop}>
                         Get Started
                     </Link>
                 </div>

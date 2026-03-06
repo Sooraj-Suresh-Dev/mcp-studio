@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react';
+import { Link } from 'react-router-dom';
 import './LearnSection.css';
 
 const resources = [
@@ -23,7 +24,7 @@ const resources = [
         ),
         title: 'Interactive Tutorials',
         description: 'Hands-on, step-by-step guides that walk you through building real MCP integrations from scratch.',
-        link: '#',
+        link: '/interactive-tutorials',
         color: 'var(--success)',
     },
     {
@@ -46,7 +47,7 @@ const resources = [
         ),
         title: 'Examples Gallery',
         description: 'Browse production-ready examples: search tools, file managers, database integrations, and more.',
-        link: '#',
+        link: '/examples-gallery',
         color: '#f472b6',
     },
 ];
@@ -83,7 +84,7 @@ export default function LearnSection() {
 
                 <div className="learn__grid stagger">
                     {resources.map((r, i) => (
-                        <a href={r.link} className="learn__card glass-card animate-on-scroll" key={i}>
+                        <Link to={r.link} className="learn__card glass-card animate-on-scroll" key={i} onClick={() => window.scrollTo(0, 0)}>
                             <div className="learn__icon" style={{ color: r.color, borderColor: `${r.color}33`, background: `${r.color}11` }}>
                                 {r.icon}
                             </div>
@@ -92,7 +93,7 @@ export default function LearnSection() {
                             <span className="learn__card-arrow" style={{ color: r.color }}>
                                 →
                             </span>
-                        </a>
+                        </Link>
                     ))}
                 </div>
             </div>

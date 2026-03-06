@@ -14,6 +14,10 @@ import SchemaDesign from './pages/SchemaDesign';
 import SecurityAuth from './pages/SecurityAuth';
 import ClaudeIntegration from './pages/ClaudeIntegration';
 import Troubleshooting from './pages/Troubleshooting';
+import InteractiveTutorials from './pages/InteractiveTutorials';
+import ExamplesGallery from './pages/ExamplesGallery';
+import PrivacyPolicy from './pages/PrivacyPolicy';
+import TermsOfService from './pages/TermsOfService';
 import './App.css';
 
 export default function App() {
@@ -30,11 +34,15 @@ export default function App() {
           <Route path="/learn/security" element={<SecurityAuth />} />
           <Route path="/learn/claude-integration" element={<ClaudeIntegration />} />
           <Route path="/learn/troubleshooting" element={<Troubleshooting />} />
+          <Route path="/interactive-tutorials" element={<InteractiveTutorials />} />
+          <Route path="/examples-gallery" element={<ExamplesGallery />} />
           <Route path="/article" element={<Article />} />
           <Route path="/options-selection" element={<OptionsSelection />} />
           <Route path="/generator" element={<Generator />} />
           <Route path="/client-connection" element={<ClientConnection />} />
           <Route path="/validator" element={<Validator />} />
+          <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+          <Route path="/terms-of-service" element={<TermsOfService />} />
         </Routes>
         <Footer />
       </div>
