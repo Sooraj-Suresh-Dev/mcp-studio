@@ -346,3 +346,31 @@
 .interactive-card:hover .read-more .arrow {
     transform: translateX(4px);
 }
+
+@media (max-width: 768px) {
+    .learn-hub {
+        padding-top: 100px;
+    }
+
+    .learn-hub__title {
+        font-size: 2.75rem;
+    }
+
+    .featured-article__content {
+        padding: 24px;
+    }
+
+    .featured-article__title {
+        font-size: 1.75rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .learn-hub__title {
+        font-size: 2.25rem;
+    }
+
+    .resource-section__title {
+        font-size: 1.25rem;
+    }
+}

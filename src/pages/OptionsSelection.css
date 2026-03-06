@@ -178,6 +178,10 @@
 }
 
 @media (max-width: 768px) {
+    .options-page {
+        padding-top: 80px;
+    }
+
     .options__title {
         font-size: 2.5rem;
     }
@@ -188,5 +192,12 @@
 
     .option-card {
         padding: 30px;
+        min-height: auto;
+    }
+}
+
+@media (max-width: 480px) {
+    .options__title {
+        font-size: 2rem;
     }
 }
