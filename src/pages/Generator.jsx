@@ -42,13 +42,29 @@ export default function Generator() {
         setTimeout(() => setCopySuccess(false), 2000);
     };
 
+    const getDynamicFilename = () => {
+        if (!generatedOutput) return 'mcp-server-config.json';
+        try {
+            const parsed = JSON.parse(generatedOutput);
+            const serverName = parsed.name || (mode === 'advanced' ? advancedServerName : '');
+            if (serverName) return `${serverName.toLowerCase().replace(/\s+/g, '-')}.json`;
+        } catch (e) {
+            if (mode === 'advanced' && advancedServerName) {
+                return `${advancedServerName.toLowerCase().replace(/\s+/g, '-')}.json`;
+            }
+        }
+        return 'mcp-server-config.json';
+    };
+
     const handleDownload = () => {
         if (!generatedOutput) return;
+        
+        const filename = getDynamicFilename();
         const blob = new Blob([generatedOutput], { type: 'application/json' });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = 'mcp-server-config.json';
+        a.download = filename;
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
@@ -195,7 +211,7 @@ export default function Generator() {
                         <div className="output-card code-view animate-fade-in">
                             <div className="output-card__header">
                                 <div className="output-card__tabs">
-                                    <span className="active">mcp-config.json</span>
+                                    <span className="active">{getDynamicFilename()}</span>
                                 </div>
                                 <div className="output-card__controls">
                                     <div className="btn-wrapper">

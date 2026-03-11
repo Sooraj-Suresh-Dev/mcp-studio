@@ -58,15 +58,23 @@ export default function ClientConnection() {
         setTimeout(() => setCopySuccess(false), 2000);
     };
 
+    const getDynamicFilename = () => {
+        return (formData.serverName || 'client_connection_config').toLowerCase().replace(/\s+/g, '-') + '.json';
+    };
+
     const handleDownload = () => {
-        const blob = new Blob([generatePreview()], { type: 'application/json' });
+        const preview = generatePreview();
+        const filename = getDynamicFilename();
+        
+        const blob = new Blob([preview], { type: 'application/json' });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = 'client_connection_config.json';
+        a.download = filename;
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
+        URL.revokeObjectURL(url);
         setDownloadSuccess(true);
         setTimeout(() => setDownloadSuccess(false), 2000);
     };
@@ -338,7 +346,7 @@ export default function ClientConnection() {
                             <div className="output-card code-view sticky-preview">
                                 <div className="output-card__header">
                                     <div className="output-card__tabs">
-                                        <span className="active">client_connection_config.json</span>
+                                        <span className="active">{getDynamicFilename()}</span>
                                     </div>
                                     <div className="output-card__controls">
                                         <div className="btn-wrapper">
