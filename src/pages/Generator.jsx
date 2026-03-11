@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import ExpandableTextarea from '../components/ExpandableTextarea';
 import './Generator.css';
 
 export default function Generator() {
@@ -286,14 +287,14 @@ export default function Generator() {
                             <div className="generator__basic-mode animate-fade-in">
                                 <div className="form-group">
                                     <label htmlFor="basic-prompt">Describe your MCP Server in simple English</label>
-                                    <textarea
+                                    <ExpandableTextarea
                                         id="basic-prompt"
-                                        className="form-control"
+                                        title="Server Description"
                                         placeholder="E.g., I want an MCP server that lets an LLM search my local file system and read markdown files."
                                         rows="8"
                                         value={basicPrompt}
                                         onChange={(e) => setBasicPrompt(e.target.value)}
-                                    ></textarea>
+                                    />
                                 </div>
                                 <div className="generator__actions">
                                     <button
@@ -376,12 +377,13 @@ export default function Generator() {
                                                     </div>
                                                     <div className="form-group col-span-2">
                                                         <label>Input Schema (JSON)</label>
-                                                        <textarea
-                                                            className="form-control"
+                                                        <ExpandableTextarea
+                                                            title={`Tool Schema — ${tool.name || 'Untitled Tool'}`}
                                                             rows="4"
                                                             value={tool.inputSchema}
                                                             onChange={(e) => updateTool(index, 'inputSchema', e.target.value)}
-                                                        ></textarea>
+                                                            placeholder='{"type": "object", "properties": {...}}'
+                                                        />
                                                     </div>
                                                 </div>
                                             </div>

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import ExpandableTextarea from '../components/ExpandableTextarea';
 import './Validator.css';
 
 export default function Validator() {
@@ -133,11 +134,13 @@ export default function Validator() {
                                     {isValidating ? "Validating..." : "Validate Schema"}
                                 </button>
                             </div>
-                            <textarea
+                            <ExpandableTextarea
                                 className="validator-textarea"
+                                title="MCP Definition JSON"
                                 value={jsonInput}
                                 onChange={(e) => setJsonInput(e.target.value)}
                                 placeholder='Paste your MCP Server JSON here...'
+                                rows={15}
                             />
                         </div>
 

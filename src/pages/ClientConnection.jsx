@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import ExpandableTextarea from '../components/ExpandableTextarea';
 import './ClientConnection.css';
 
 export default function ClientConnection() {
@@ -168,8 +169,9 @@ export default function ClientConnection() {
                                 ) : (
                                     <>
                                         <h3>Describe your Client Connection</h3>
-                                        <textarea
+                                        <ExpandableTextarea
                                             className="form-control"
+                                            title="Client Settings Description"
                                             rows="10"
                                             placeholder="E.g., I want to connect a local weather server running at http://localhost:3000 with an API key header."
                                             value={aiLabel}
